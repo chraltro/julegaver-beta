@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Julegaveudtrækning 2025</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            /* Premium Dark Palette */
+            --bg-dark: #030712;
+            --bg-light: #111827;
+            
+            /* Glassmorphism */
+            --glass-bg: rgba(17, 24, 39, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-highlight: rgba(255, 255, 255, 0.15);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            
+            /* Accents */
+            --accent-primary: #f43f5e; /* Rose 500 */
+            --accent-secondary: #8b5cf6; /* Violet 500 */
+            --accent-gold: #fbbf24;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            
+            /* Animations */
+            --ease-elastic: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* Prevent scrollbars */
+            position: fixed; /* Lock body for mobile */
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100dvh; /* Dynamic viewport height */
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
+        }
+
+        /* Animated Background */
+        .ambient-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -2;
+            pointer-events: none;
+            background: radial-gradient(circle at 50% 50%, #1e1b4b 0%, #020617 100%);
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px); /* Reduced blur for performance */
+            opacity: 0.4;
+            will-change: transform; /* Hint to browser */
+            animation: float-orb 20s infinite alternate ease-in-out;
+        }
+
+        .orb-1 {
+            top: -10%; left: -10%; width: 50vw; height: 50vw;
+            background: var(--accent-primary);
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            bottom: -10%; right: -10%; width: 60vw; height: 60vw;
+            background: var(--accent-secondary);
+            animation-delay: -5s;
+        }
+
+        .orb-3 {
+            top: 40%; left: 40%; width: 30vw; height: 30vw;
+            background: var(--accent-gold);
+            opacity: 0.2;
+            animation-delay: -10s;
+        }
+
+        @keyframes float-orb {
+            0% { transform: translate3d(0, 0, 0) scale(1); }
+            100% { transform: translate3d(30px, 50px, 0) scale(1.1); }
+        }
+
+        /* Noise Texture */
+        .noise-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Main Card */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--glass-border);
+            border-top: 1px solid var(--glass-highlight);
+            border-radius: 32px;
+            padding: clamp(24px, 5vw, 64px); /* Reduced padding for mobile */
+            width: 90%;
+            max-width: 560px;
+            box-shadow: var(--glass-shadow), 
+                        0 0 0 1px rgba(255,255,255,0.05) inset;
+            position: relative;
+            transform-style: preserve-3d;
+            will-change: transform;
+            transition: transform 0.1s cubic-bezier(0.2, 0.8, 0.2, 1); /* Smoother tilt */
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 32px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .wreath-container {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 16px;
+        }
+
+        .icon-wreath {
+            font-size: 3.5rem;
+            display: block;
+            filter: drop-shadow(0 0 20px rgba(244, 63, 94, 0.4));
+            animation: pulse-glow 3s infinite ease-in-out;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 20px rgba(244, 63, 94, 0.4)); }
+            50% { transform: scale(1.05); filter: drop-shadow(0 0 30px rgba(244, 63, 94, 0.6)); }
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            /* Adjusted clamp for better mobile fit */
+            font-size: clamp(1.8rem, 7vw, 3.5rem); 
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            line-height: 1.1;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            word-wrap: break-word; /* Ensure wrapping */
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            font-weight: 400;
+            max-width: 90%;
+            margin: 0 auto;
+        }
+
+        /* Grid */
+        .names-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            position: relative;
+            z-index: 2;
+        }
+
+        @media (max-width: 480px) {
+            .names-grid { grid-template-columns: 1fr; }
+        }
+
+        /* Buttons */
+        .name-button {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.3s var(--ease-smooth);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+
+        .name-button::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: translateX(-100%);
+            transition: 0.5s;
+        }
+
+        /* Only apply hover effects on devices that support hover */
+        @media (hover: hover) {
+            .name-button:hover {
+                background: rgba(255, 255, 255, 0.08);
+                border-color: rgba(255, 255, 255, 0.3);
+                transform: translateY(-4px);
+                box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+                text-shadow: 0 0 10px rgba(255,255,255,0.5);
+            }
+            .name-button:hover::before {
+                transform: translateX(100%);
+            }
+        }
+
+        .name-button:active {
+            transform: scale(0.96);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Result View */
+        .result {
+            display: none;
+            text-align: center;
+            animation: fadeIn 0.6s var(--ease-elastic) forwards;
+        }
+
+        .result.show { display: block; }
+
+        .result-card-inner {
+            background: linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            padding: 40px 20px;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-card-inner::after {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(244, 63, 94, 0.1) 0%, transparent 70%);
+            animation: rotate-glow 10s linear infinite;
+        }
+
+        @keyframes rotate-glow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .result-label {
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 16px;
+            display: block;
+            position: relative;
+            z-index: 2;
+        }
+
+        .result-name {
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            font-weight: 800;
+            background: linear-gradient(to right, #fff, #f43f5e);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.1;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 2;
+            filter: drop-shadow(0 0 20px rgba(244, 63, 94, 0.3));
+        }
+
+        .result-instruction {
+            font-size: 1rem;
+            color: var(--text-muted);
+            font-style: italic;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Back Button */
+        .back-button {
+            background: var(--text-main);
+            color: var(--bg-dark);
+            border: none;
+            padding: 16px 32px;
+            border-radius: 100px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+        }
+
+        .back-button:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.4);
+        }
+
+        /* Info Button */
+        .info-button {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .info-button:hover {
+            background: rgba(255,255,255,0.1);
+            color: var(--text-main);
+            transform: rotate(90deg);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(3, 7, 18, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 1000;
+            padding: 20px;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: #1e293b;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 32px;
+            padding: 32px;
+            max-width: 500px;
+            width: 100%;
+            transform: translateY(40px) scale(0.95);
+            transition: all 0.4s var(--ease-elastic);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal.show .modal-content {
+            transform: translateY(0) scale(1);
+        }
+
+        .modal-header {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: var(--text-main);
+            text-align: center;
+        }
+
+        .modal-section { margin-bottom: 24px; }
+        
+        .modal-section h3 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent-primary);
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .modal-section p, .modal-section li {
+            color: var(--text-muted);
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .modal-section ul {
+            list-style: none;
+            background: rgba(0,0,0,0.2);
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 8px;
+        }
+
+        .modal-section li {
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding: 8px 0;
+        }
+        .modal-section li:last-child { border-bottom: none; }
+
+        .modal-close {
+            width: 100%;
+            padding: 16px;
+            background: var(--text-main);
+            color: var(--bg-dark);
+            border: none;
+            border-radius: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+        
+        .modal-close:hover { transform: scale(1.02); }
+
+        /* Snowflakes */
+        .snowflake {
+            position: fixed;
+            top: -20px;
+            color: white;
+            pointer-events: none;
+            z-index: 1;
+            text-shadow: 0 0 5px rgba(255,255,255,0.8);
+            will-change: transform;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+    <div class="noise-overlay"></div>
+
+    <div class="container glass-card" id="tiltCard">
+        <button id="infoBtn" class="info-button" onclick="showModal()" aria-label="Regler">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"></path><path d="M12 9h.01"></path><path d="M11 12h1v4h1"></path></svg>
+        </button>
+
+        <header id="headerContent">
+            <div class="wreath-container">
+                <div class="icon-wreath">🎁</div>
+            </div>
+            <h1>Julegaveudtrækning</h1>
+            <p class="subtitle">Vælg dit navn herunder for at afsløre, hvem du skal forkæle i år.</p>
+        </header>
+
+        <div class="names-grid" id="namesGrid"></div>
+
+        <div class="result" id="result">
+            <div class="result-card-inner">
+                <span class="result-label">Du skal give gave til</span>
+                <div class="result-name" id="resultName"></div>
+                <p class="result-instruction">Husk at holde det hemmeligt! 🤫</p>
+            </div>
+            <button class="back-button" onclick="goBack()">Tilbage til oversigten</button>
+        </div>
+    </div>
+
+    <div class="modal" id="modal" onclick="closeModalOnBackdrop(event)">
+        <div class="modal-content">
+            <div class="modal-header">Regler for Udtrækning</div>
+
+            <div class="modal-section">
+                <h3>Hvordan virker det?</h3>
+                <p>Systemet blander alle navne tilfældigt. Klik på dit eget navn for at se din modtager. Fordelingen er lavet på forhånd og ændres ikke.</p>
+            </div>
+
+            <div class="modal-section">
+                <h3>Begrænsninger</h3>
+                <p>Systemet sikrer automatisk, at følgende ikke giver til hinanden:</p>
+                <ul>
+                    <li>Malene ↔ Jakob</li>
+                    <li>Will ↔ Lisbeth</li>
+                    <li>Maud ↔ Christian</li>
+                    <li>Poul giver aldrig til Helle</li>
+                </ul>
+            </div>
+
+            <div class="modal-section">
+                <h3>💝 Helle-reglen</h3>
+                <p>Helle modtager kun gaver. En tilfældig person (undtagen Poul) får tildelt Helle som <b>ekstra</b> modtager.</p>
+            </div>
+
+            <button class="modal-close" onclick="closeModal()">Forstået</button>
+        </div>
+    </div>
+
+    <script>
+        /* 
+           LOGIC PRESERVED EXACTLY AS REQUESTED 
+        */
+        const participants = ['Poul', 'Will', 'Lisbeth', 'Jakob', 'Malene', 'Maud', 'Christian'];
+        const receiver = 'Helle';
+
+        const forbiddenPairs = {
+            'Malene': ['Jakob'],
+            'Jakob': ['Malene'],
+            'Will': ['Lisbeth'],
+            'Lisbeth': ['Will'],
+            'Maud': ['Christian'],
+            'Christian': ['Maud'],
+            'Poul': ['Helle']
+        };
+
+        function isValidAssignment(giver, receiverName) {
+            if (giver === receiverName) return false;
+            if (forbiddenPairs[giver] && forbiddenPairs[giver].includes(receiverName)) {
+                return false;
+            }
+            return true;
+        }
+
+        class SeededRandom {
+            constructor(seed) {
+                this.seed = seed;
+            }
+            next() {
+                this.seed = (this.seed * 9301 + 49297) % 233280;
+                return this.seed / 233280;
+            }
+        }
+
+        // Fixed seed ensures the result is the same every time the page loads (persistency)
+        const FIXED_SEED = 23456;
+
+        function seededShuffle(array, seed) {
+            const rng = new SeededRandom(seed);
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(rng.next() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function createAssignments(seed) {
+            const rng = new SeededRandom(seed);
+            let assignments = {};
+            let receivers = [...participants];
+            let givers = [...participants];
+
+            receivers = seededShuffle(receivers, seed);
+
+            for (let giver of givers) {
+                let validReceivers = receivers.filter(r =>
+                    !Object.values(assignments).includes(r) &&
+                    isValidAssignment(giver, r)
+                );
+
+                if (validReceivers.length === 0) {
+                    // Retry with new seed if stuck
+                    return createAssignments(seed + 1);
+                }
+
+                const receiverIndex = Math.floor(rng.next() * validReceivers.length);
+                assignments[giver] = validReceivers[receiverIndex];
+            }
+
+            // Helle Logic
+            const eligibleForHelle = givers.filter(g => g !== 'Poul');
+            const luckyPersonIndex = Math.floor(rng.next() * eligibleForHelle.length);
+            const luckyPerson = eligibleForHelle[luckyPersonIndex];
+            
+            // Append Helle nicely
+            assignments[luckyPerson] = assignments[luckyPerson] + ' & ' + receiver;
+
+            return assignments;
+        }
+
+        let currentAssignments = {};
+
+        function initializeAssignments() {
+            currentAssignments = createAssignments(FIXED_SEED);
+        }
+
+        /* 
+           UI FUNCTIONS 
+        */
+        function renderNames() {
+            const grid = document.getElementById('namesGrid');
+            grid.innerHTML = '';
+
+            participants.forEach(name => {
+                const button = document.createElement('button');
+                button.className = 'name-button';
+                button.textContent = name;
+                button.onclick = (e) => showResult(name, e);
+                grid.appendChild(button);
+            });
+        }
+
+        function showResult(giver, event) {
+            const receiverName = currentAssignments[giver];
+            
+            // Trigger Confetti
+            triggerConfetti();
+
+            // Update Content
+            document.getElementById('resultName').textContent = receiverName;
+            
+            // Visual Transition
+            const grid = document.getElementById('namesGrid');
+            const header = document.getElementById('headerContent');
+            const result = document.getElementById('result');
+            const infoBtn = document.getElementById('infoBtn');
+
+            grid.style.display = 'none';
+            header.style.display = 'none';
+            infoBtn.style.display = 'none'; 
+            result.classList.add('show');
+        }
+
+        function goBack() {
+            document.getElementById('namesGrid').style.display = 'grid';
+            document.getElementById('headerContent').style.display = 'block';
+            document.getElementById('infoBtn').style.display = 'flex';
+            document.getElementById('result').classList.remove('show');
+        }
+
+        // Modal Logic
+        function showModal() {
+            const modal = document.getElementById('modal');
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('modal');
+            modal.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        function closeModalOnBackdrop(event) {
+            if (event.target.id === 'modal') {
+                closeModal();
+            }
+        }
+
+        // Initialization
+        initializeAssignments();
+        renderNames();
+
+        // --- Visual Effects & Mobile Optimization ---
+
+        // 1. 3D Tilt Effect (Mouse & Gyroscope)
+        const card = document.getElementById('tiltCard');
+        let currentX = 0;
+        let currentY = 0;
+        let targetX = 0;
+        let targetY = 0;
+
+        // Mouse Tilt (Desktop)
+        document.addEventListener('mousemove', (e) => {
+            if (window.innerWidth < 768) return; // Disable mouse tilt on mobile
+            
+            targetX = (window.innerWidth / 2 - e.pageX) / 30;
+            targetY = (window.innerHeight / 2 - e.pageY) / 30;
+        });
+
+        // Gyroscope Tilt (Mobile)
+        // Note: iOS requires permission, but we'll try to use it if available
+        if (window.DeviceOrientationEvent) {
+            window.addEventListener('deviceorientation', (e) => {
+                if (window.innerWidth >= 768) return; // Disable gyro on desktop
+
+                // Clamp values to avoid extreme tilting
+                const gamma = Math.min(Math.max(e.gamma, -45), 45); // Left/Right
+                const beta = Math.min(Math.max(e.beta, -45), 45);   // Front/Back
+
+                targetX = -gamma / 2; // Invert for natural feel
+                targetY = -beta / 2;
+            });
+        }
+
+        // Smooth Animation Loop
+        function animateTilt() {
+            // Linear interpolation for smoothness
+            currentX += (targetX - currentX) * 0.1;
+            currentY += (targetY - currentY) * 0.1;
+
+            card.style.transform = `rotateY(${currentX}deg) rotateX(${currentY}deg)`;
+            requestAnimationFrame(animateTilt);
+        }
+        animateTilt();
+
+        // Reset on mouse leave
+        document.addEventListener('mouseleave', () => {
+             targetX = 0;
+             targetY = 0;
+        });
+
+        // 2. Confetti (Optimized)
+        function triggerConfetti() {
+            const duration = 2500;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 25, spread: 360, ticks: 60, zIndex: 0 };
+
+            const random = (min, max) => Math.random() * (max - min) + min;
+
+            const interval = setInterval(function() {
+                const timeLeft = animationEnd - Date.now();
+
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+
+                const particleCount = 30 * (timeLeft / duration); // Reduced count
+                
+                confetti(Object.assign({}, defaults, { 
+                    particleCount, 
+                    origin: { x: random(0.1, 0.3), y: Math.random() - 0.2 } 
+                }));
+                confetti(Object.assign({}, defaults, { 
+                    particleCount, 
+                    origin: { x: random(0.7, 0.9), y: Math.random() - 0.2 } 
+                }));
+            }, 250);
+        }
+
+        // 3. Cinematic Snowflakes
+        function createSnowflake() {
+            const snowflake = document.createElement('div');
+            snowflake.className = 'snowflake';
+            snowflake.innerHTML = '❄';
+            
+            const size = Math.random() * 1.5 + 0.5; 
+            const opacity = Math.random() * 0.5 + 0.1;
+            const duration = Math.random() * 5000 + 8000; 
+            
+            snowflake.style.left = Math.random() * 100 + 'vw';
+            snowflake.style.fontSize = size + 'rem';
+            snowflake.style.opacity = opacity;
+            
+            document.body.appendChild(snowflake);
+
+            const animation = snowflake.animate([
+                { transform: `translateY(0) rotate(0deg)` },
+                { transform: `translateY(100vh) rotate(${Math.random() * 360}deg)` }
+            ], {
+                duration: duration,
+                easing: 'linear'
+            });
+
+            animation.onfinish = () => snowflake.remove();
+        }
+
+        for(let i=0; i<15; i++) setTimeout(createSnowflake, Math.random() * 3000);
+        setInterval(createSnowflake, 600);
+
+    </script>
+</body>
+</html>
