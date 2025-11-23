@@ -126,6 +126,30 @@
             will-change: transform;
             transition: transform 0.1s cubic-bezier(0.2, 0.8, 0.2, 1); /* Smoother tilt */
             margin: auto; /* Center in flex container */
+            overflow: hidden; /* For sheen effect */
+        }
+
+        /* Holographic Sheen */
+        .glass-card::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(
+                to right, 
+                transparent 0%, 
+                rgba(255, 255, 255, 0.15) 50%, 
+                transparent 100%
+            );
+            transform: skewX(-25deg);
+            pointer-events: none;
+            animation: sheen-sweep 6s infinite ease-in-out;
+            z-index: 1;
+        }
+
+        @keyframes sheen-sweep {
+            0%, 40% { left: -100%; opacity: 0; }
+            50% { opacity: 1; }
+            60%, 100% { left: 200%; opacity: 0; }
         }
 
         /* Header */
@@ -444,23 +468,6 @@
         
         .modal-close:hover { transform: scale(1.02); }
 
-        .permission-btn {
-            width: 100%;
-            padding: 16px;
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text-main);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 0.95rem;
-            transition: 0.2s;
-            margin-top: 24px;
-            display: none; /* Hidden by default */
-        }
-
-        .permission-btn:hover { background: rgba(255, 255, 255, 0.2); }
-
         /* Snowflakes */
         .snowflake {
             position: fixed;
@@ -537,7 +544,6 @@
                 <p>Helle modtager kun gaver. En tilfældig person (undtagen Poul) får tildelt Helle som <b>ekstra</b> modtager.</p>
             </div>
 
-            <button id="motionBtn" class="permission-btn" onclick="requestMotionPermission()">📱 Tillad bevægelseseffekter</button>
             <button class="modal-close" onclick="closeModal()">Forstået</button>
         </div>
     </div>
@@ -641,12 +647,12 @@
                 const button = document.createElement('button');
                 button.className = 'name-button';
                 button.textContent = name;
-                button.onclick = (e) => showResult(name, e);
+                button.onclick = () => showResult(name);
                 grid.appendChild(button);
             });
         }
 
-        function showResult(giver, event) {
+        function showResult(giver) {
             const receiverName = currentAssignments[giver];
             
             // Trigger Confetti
@@ -679,12 +685,6 @@
             const modal = document.getElementById('modal');
             modal.classList.add('show');
             document.body.style.overflow = 'hidden';
-            
-            // Show motion button if needed
-            if (typeof DeviceOrientationEvent !== 'undefined' && 
-                typeof DeviceOrientationEvent.requestPermission === 'function') {
-                document.getElementById('motionBtn').style.display = 'block';
-            }
         }
 
         function closeModal() {
@@ -705,61 +705,43 @@
 
         // --- Visual Effects & Mobile Optimization ---
 
-        // 1. 3D Tilt Effect (Mouse & Gyroscope)
+        // 1. 3D Tilt Effect (Auto-Float + Touch/Mouse)
         const card = document.getElementById('tiltCard');
         let currentX = 0;
         let currentY = 0;
         let targetX = 0;
         let targetY = 0;
+        let isInteracting = false;
 
         // Mouse Tilt (Desktop)
         document.addEventListener('mousemove', (e) => {
-            if (window.innerWidth < 768) return; // Disable mouse tilt on mobile
-            
+            if (window.innerWidth < 768) return; 
+            isInteracting = true;
             targetX = (window.innerWidth / 2 - e.pageX) / 30;
             targetY = (window.innerHeight / 2 - e.pageY) / 30;
         });
 
-        // Gyroscope Tilt (Mobile)
-        function handleOrientation(e) {
-            if (window.innerWidth >= 768) return; // Disable gyro on desktop
-
-            // Clamp values to avoid extreme tilting
-            const gamma = Math.min(Math.max(e.gamma, -45), 45); // Left/Right
-            const beta = Math.min(Math.max(e.beta, -45), 45);   // Front/Back
-
-            targetX = -gamma / 2; // Invert for natural feel
-            targetY = -beta / 2;
-        }
-
-        // iOS Permission Request
-        function requestMotionPermission() {
-            if (typeof DeviceOrientationEvent !== 'undefined' && 
-                typeof DeviceOrientationEvent.requestPermission === 'function') {
-                
-                DeviceOrientationEvent.requestPermission()
-                    .then(response => {
-                        if (response === 'granted') {
-                            window.addEventListener('deviceorientation', handleOrientation);
-                            document.getElementById('motionBtn').style.display = 'none';
-                            alert("Bevægelseseffekter aktiveret! 📱");
-                        } else {
-                            alert("Tilladelse nægtet.");
-                        }
-                    })
-                    .catch(console.error);
-            } else {
-                alert("Din enhed understøtter ikke denne funktion.");
-            }
-        }
-
-        // Auto-enable for non-iOS devices
-        if (window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission !== 'function') {
-            window.addEventListener('deviceorientation', handleOrientation);
-        }
+        // Touch Tilt (Mobile)
+        document.addEventListener('touchstart', () => { isInteracting = true; });
+        document.addEventListener('touchend', () => { isInteracting = false; });
+        document.addEventListener('touchmove', (e) => {
+            isInteracting = true;
+            const touch = e.touches[0];
+            // More sensitive on mobile for better feel
+            targetX = (window.innerWidth / 2 - touch.clientX) / 20;
+            targetY = (window.innerHeight / 2 - touch.clientY) / 20;
+        }, { passive: true });
 
         // Smooth Animation Loop
         function animateTilt() {
+            if (!isInteracting) {
+                // Auto-Float (Idle Animation)
+                const time = Date.now() * 0.001;
+                // Gentle figure-8 motion
+                targetX = Math.sin(time) * 4; 
+                targetY = Math.cos(time * 0.8) * 4;
+            }
+
             // Linear interpolation for smoothness
             currentX += (targetX - currentX) * 0.1;
             currentY += (targetY - currentY) * 0.1;
@@ -771,8 +753,7 @@
 
         // Reset on mouse leave
         document.addEventListener('mouseleave', () => {
-             targetX = 0;
-             targetY = 0;
+             isInteracting = false;
         });
 
         // 2. Confetti (Optimized)
