@@ -41,9 +41,8 @@
 
         html, body {
             width: 100%;
-            height: 100%;
-            overflow: hidden; /* Prevent scrollbars */
-            position: fixed; /* Lock body for mobile */
+            min-height: 100%;
+            overflow-x: hidden; /* Allow vertical scroll, prevent horizontal */
         }
 
         body {
@@ -55,6 +54,7 @@
             justify-content: center;
             align-items: center;
             perspective: 1000px;
+            padding: 20px 0; /* Add padding for scrolling space */
         }
 
         /* Animated Background */
@@ -125,6 +125,7 @@
             transform-style: preserve-3d;
             will-change: transform;
             transition: transform 0.1s cubic-bezier(0.2, 0.8, 0.2, 1); /* Smoother tilt */
+            margin: auto; /* Center in flex container */
         }
 
         /* Header */
@@ -409,8 +410,8 @@
 
         .modal-section p, .modal-section li {
             color: var(--text-muted);
-            line-height: 1.6;
-            font-size: 0.95rem;
+            line-height: 1.7;
+            font-size: 1rem;
         }
 
         .modal-section ul {
@@ -423,7 +424,7 @@
 
         .modal-section li {
             border-bottom: 1px solid rgba(255,255,255,0.05);
-            padding: 8px 0;
+            padding: 10px 0;
         }
         .modal-section li:last-child { border-bottom: none; }
 
@@ -438,9 +439,27 @@
             cursor: pointer;
             font-size: 1rem;
             transition: 0.2s;
+            margin-top: 12px;
         }
         
         .modal-close:hover { transform: scale(1.02); }
+
+        .permission-btn {
+            width: 100%;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: 0.2s;
+            margin-top: 24px;
+            display: none; /* Hidden by default */
+        }
+
+        .permission-btn:hover { background: rgba(255, 255, 255, 0.2); }
 
         /* Snowflakes */
         .snowflake {
@@ -518,6 +537,7 @@
                 <p>Helle modtager kun gaver. En tilfældig person (undtagen Poul) får tildelt Helle som <b>ekstra</b> modtager.</p>
             </div>
 
+            <button id="motionBtn" class="permission-btn" onclick="requestMotionPermission()">📱 Tillad bevægelseseffekter</button>
             <button class="modal-close" onclick="closeModal()">Forstået</button>
         </div>
     </div>
@@ -659,6 +679,12 @@
             const modal = document.getElementById('modal');
             modal.classList.add('show');
             document.body.style.overflow = 'hidden';
+            
+            // Show motion button if needed
+            if (typeof DeviceOrientationEvent !== 'undefined' && 
+                typeof DeviceOrientationEvent.requestPermission === 'function') {
+                document.getElementById('motionBtn').style.display = 'block';
+            }
         }
 
         function closeModal() {
@@ -695,18 +721,41 @@
         });
 
         // Gyroscope Tilt (Mobile)
-        // Note: iOS requires permission, but we'll try to use it if available
-        if (window.DeviceOrientationEvent) {
-            window.addEventListener('deviceorientation', (e) => {
-                if (window.innerWidth >= 768) return; // Disable gyro on desktop
+        function handleOrientation(e) {
+            if (window.innerWidth >= 768) return; // Disable gyro on desktop
 
-                // Clamp values to avoid extreme tilting
-                const gamma = Math.min(Math.max(e.gamma, -45), 45); // Left/Right
-                const beta = Math.min(Math.max(e.beta, -45), 45);   // Front/Back
+            // Clamp values to avoid extreme tilting
+            const gamma = Math.min(Math.max(e.gamma, -45), 45); // Left/Right
+            const beta = Math.min(Math.max(e.beta, -45), 45);   // Front/Back
 
-                targetX = -gamma / 2; // Invert for natural feel
-                targetY = -beta / 2;
-            });
+            targetX = -gamma / 2; // Invert for natural feel
+            targetY = -beta / 2;
+        }
+
+        // iOS Permission Request
+        function requestMotionPermission() {
+            if (typeof DeviceOrientationEvent !== 'undefined' && 
+                typeof DeviceOrientationEvent.requestPermission === 'function') {
+                
+                DeviceOrientationEvent.requestPermission()
+                    .then(response => {
+                        if (response === 'granted') {
+                            window.addEventListener('deviceorientation', handleOrientation);
+                            document.getElementById('motionBtn').style.display = 'none';
+                            alert("Bevægelseseffekter aktiveret! 📱");
+                        } else {
+                            alert("Tilladelse nægtet.");
+                        }
+                    })
+                    .catch(console.error);
+            } else {
+                alert("Din enhed understøtter ikke denne funktion.");
+            }
+        }
+
+        // Auto-enable for non-iOS devices
+        if (window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission !== 'function') {
+            window.addEventListener('deviceorientation', handleOrientation);
         }
 
         // Smooth Animation Loop
@@ -754,8 +803,11 @@
             }, 250);
         }
 
-        // 3. Cinematic Snowflakes
+        // 3. Cinematic Snowflakes (Optimized)
         function createSnowflake() {
+            // Limit total snowflakes
+            if (document.querySelectorAll('.snowflake').length > 15) return;
+
             const snowflake = document.createElement('div');
             snowflake.className = 'snowflake';
             snowflake.innerHTML = '❄';
@@ -771,8 +823,8 @@
             document.body.appendChild(snowflake);
 
             const animation = snowflake.animate([
-                { transform: `translateY(0) rotate(0deg)` },
-                { transform: `translateY(100vh) rotate(${Math.random() * 360}deg)` }
+                { transform: `translate3d(0, 0, 0) rotate(0deg)` },
+                { transform: `translate3d(0, 100vh, 0) rotate(${Math.random() * 360}deg)` }
             ], {
                 duration: duration,
                 easing: 'linear'
@@ -781,8 +833,10 @@
             animation.onfinish = () => snowflake.remove();
         }
 
-        for(let i=0; i<15; i++) setTimeout(createSnowflake, Math.random() * 3000);
-        setInterval(createSnowflake, 600);
+        // Slower interval for better performance
+        setInterval(createSnowflake, 1000);
+        // Initial batch
+        for(let i=0; i<5; i++) setTimeout(createSnowflake, Math.random() * 3000);
 
     </script>
 </body>
