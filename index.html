@@ -281,13 +281,90 @@
             overflow: hidden;
         }
 
+        /* Text Shimmer */
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(1.8rem, 7vw, 3.5rem); 
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            line-height: 1.1;
+            margin-bottom: 12px;
+            background: linear-gradient(110deg, #cbd5e1 30%, #ffffff 40%, #cbd5e1 50%);
+            background-size: 200% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            word-wrap: break-word;
+            animation: text-shimmer 5s infinite linear;
+        }
+
+        @keyframes text-shimmer {
+            0% { background-position: 100% 0; }
+            100% { background-position: -100% 0; }
+        }
+
+        /* Tactile Squash */
+        .btn:active, .gift-box-container:active {
+            transform: scale(0.95);
+        }
+
+        /* Parallax Blobs */
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.6;
+            animation: float 20s infinite alternate;
+            transition: transform 0.1s ease-out; /* Smooth parallax */
+            z-index: -1;
+        }
+
         .result-card-inner::after {
             content: '';
             position: absolute;
             top: -50%; left: -50%; width: 200%; height: 200%;
             background: radial-gradient(circle, rgba(244, 63, 94, 0.1) 0%, transparent 70%);
             animation: rotate-glow 10s linear infinite;
+            pointer-events: none;
+            z-index: 0;
         }
+
+        /* God Rays */
+        .god-rays {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 100vw; height: 100vw;
+            transform: translate(-50%, -50%);
+            background: repeating-conic-gradient(
+                from 0deg,
+                rgba(255, 215, 0, 0.1) 0deg 10deg,
+                transparent 10deg 20deg
+            );
+            animation: rotate-rays 20s linear infinite;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+        .god-rays.active { opacity: 1; }
+
+        @keyframes rotate-rays {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* Screen Flash */
+        .flash-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 9999;
+            transition: opacity 0.1s ease-out;
+        }
+        .flash-overlay.active { opacity: 0.4; }
 
         @keyframes rotate-glow {
             from { transform: rotate(0deg); }
@@ -786,20 +863,20 @@
 
         // 3. Cinematic Snowflakes (Optimized)
         function createSnowflake() {
-            // Limit total snowflakes
-            if (document.querySelectorAll('.snowflake').length > 15) return;
-
             const snowflake = document.createElement('div');
-            snowflake.className = 'snowflake';
+            snowflake.classList.add('snowflake');
             snowflake.innerHTML = '❄';
             
-            const size = Math.random() * 1.5 + 0.5; 
-            const opacity = Math.random() * 0.5 + 0.1;
-            const duration = Math.random() * 5000 + 8000; 
+            // Randomize size, opacity, and BLUR for depth
+            const size = Math.random() * 1.5 + 0.5;
+            const opacity = Math.random() * 0.5 + 0.3;
+            const duration = Math.random() * 10000 + 5000;
+            const blur = Math.random() * 3; // Depth of field
             
             snowflake.style.left = Math.random() * 100 + 'vw';
             snowflake.style.fontSize = size + 'rem';
             snowflake.style.opacity = opacity;
+            snowflake.style.filter = `blur(${blur}px)`;
             
             document.body.appendChild(snowflake);
 
@@ -818,6 +895,370 @@
         setInterval(createSnowflake, 1000);
         // Initial batch
         for(let i=0; i<5; i++) setTimeout(createSnowflake, Math.random() * 3000);
+
+        // --- Parallax Background Logic ---
+        document.addEventListener('mousemove', (e) => {
+            const x = (window.innerWidth - e.pageX * 2) / 100;
+            const y = (window.innerHeight - e.pageY * 2) / 100;
+
+            document.querySelectorAll('.blob').forEach((blob, index) => {
+                const speed = index + 1; // Different speeds for depth
+                blob.style.transform = `translate(${x * speed}px, ${y * speed}px)`;
+            });
+        });
+        
+        // --- 4. Audio System (Web Audio API) ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        const Sound = {
+            hover: () => {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.1);
+                
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+                
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.1);
+            },
+            click: () => {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+                
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+                
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.15);
+            },
+            reveal: () => {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const now = audioCtx.currentTime;
+                
+                // Magical Chord
+                [261.63, 329.63, 392.00, 523.25, 659.25, 783.99].forEach((freq, i) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    
+                    osc.type = 'sine';
+                    osc.frequency.value = freq;
+                    
+                    gain.gain.setValueAtTime(0, now);
+                    gain.gain.linearRampToValueAtTime(0.05, now + i * 0.05 + 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 2);
+                    
+                    osc.start(now + i * 0.05);
+                    osc.stop(now + 2.5);
+                });
+            }
+        };
+
+        // Attach sounds to interactions
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('mouseenter', Sound.hover);
+            btn.addEventListener('click', Sound.click);
+        });
+
+
+
+        // --- 6. Scramble Text Effect ---
+        class ScrambleText {
+            constructor(el) {
+                this.el = el;
+                this.chars = '!<>-_\\/[]{}—=+*^?#________';
+                this.frame = 0;
+                this.queue = [];
+                this.resolve = null;
+            }
+
+            setText(newText) {
+                const oldText = this.el.innerText;
+                const length = Math.max(oldText.length, newText.length);
+                this.queue = [];
+                
+                for (let i = 0; i < length; i++) {
+                    const from = oldText[i] || '';
+                    const to = newText[i] || '';
+                    const start = Math.floor(Math.random() * 40);
+                    const end = start + Math.floor(Math.random() * 40);
+                    this.queue.push({ from, to, start, end });
+                }
+
+                cancelAnimationFrame(this.frameRequest);
+                this.frame = 0;
+                this.update();
+                return new Promise(r => this.resolve = r);
+            }
+
+            update() {
+                let output = '';
+                let complete = 0;
+                
+                for (let i = 0, n = this.queue.length; i < n; i++) {
+                    let { from, to, start, end, char } = this.queue[i];
+                    if (this.frame >= end) {
+                        complete++;
+                        output += to;
+                    } else if (this.frame >= start) {
+                        if (!char || Math.random() < 0.28) {
+                            char = this.chars[Math.floor(Math.random() * this.chars.length)];
+                            this.queue[i].char = char;
+                        }
+                        output += `<span class="dud">${char}</span>`;
+                    } else {
+                        output += from;
+                    }
+                }
+
+                this.el.innerHTML = output;
+                
+                if (complete === this.queue.length) {
+                    if (this.resolve) this.resolve();
+                } else {
+                    this.frameRequest = requestAnimationFrame(this.update.bind(this));
+                    this.frame++;
+                }
+            }
+        }
+
+        // --- 7. Gift Unwrapping Logic ---
+        // We need to inject the gift box UI dynamically
+        const resultContainer = document.querySelector('.result-card-inner');
+        const originalResultContent = resultContainer.innerHTML;
+
+        function showGiftBox(receiverName) {
+            // Clear current content
+            resultContainer.innerHTML = '';
+            
+            // Create Gift Box 2.0
+            const giftBox = document.createElement('div');
+            giftBox.className = 'gift-box-container';
+            giftBox.innerHTML = `
+                <div class="gift-box" id="giftBox">
+                    <div class="gift-lid">
+                        <div class="gift-bow"></div>
+                    </div>
+                    <div class="gift-body">
+                        <div class="gift-ribbon-vertical"></div>
+                    </div>
+                    <div class="gift-tag">Til Dig</div>
+                </div>
+                <p class="gift-instruction">Tryk for at pakke op!</p>
+            `;
+            
+            resultContainer.appendChild(giftBox);
+
+            // Add CSS for Gift Box 2.0 if not present
+            if (!document.getElementById('gift-styles')) {
+                const style = document.createElement('style');
+                style.id = 'gift-styles';
+                style.textContent = `
+                    .gift-box-container {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        height: 220px;
+                        cursor: pointer;
+                        position: relative;
+                        z-index: 10;
+                        perspective: 600px;
+                    }
+                    .gift-box {
+                        position: relative;
+                        width: 120px;
+                        height: 120px;
+                        animation: float-gift 3s ease-in-out infinite;
+                        transform-style: preserve-3d;
+                        transition: transform 0.2s;
+                    }
+                    .gift-box:hover {
+                        transform: scale(1.05) rotate(2deg);
+                    }
+                    .gift-body {
+                        position: absolute;
+                        bottom: 0; width: 100%; height: 85%;
+                        background: linear-gradient(135deg, #be123c 0%, #9f1239 100%);
+                        border-radius: 4px;
+                        box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+                    }
+                    .gift-ribbon-vertical {
+                        position: absolute;
+                        left: 50%; top: 0; width: 20px; height: 100%;
+                        background: linear-gradient(to right, #fbbf24, #f59e0b, #fbbf24);
+                        transform: translateX(-50%);
+                        box-shadow: 0 0 5px rgba(0,0,0,0.2);
+                    }
+                    .gift-lid {
+                        position: absolute;
+                        top: 0; left: -5%; width: 110%; height: 20%;
+                        background: #e11d48;
+                        border-radius: 4px;
+                        z-index: 2;
+                        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                        transform: translateZ(1px);
+                    }
+                    .gift-bow {
+                        position: absolute;
+                        top: -25px; left: 50%;
+                        width: 60px; height: 30px;
+                        background: radial-gradient(circle at center, #fbbf24 20%, transparent 20%),
+                                    linear-gradient(to right, #fbbf24, #f59e0b);
+                        border-radius: 50% 50% 0 0;
+                        transform: translateX(-50%);
+                        clip-path: polygon(0% 100%, 50% 0%, 100% 100%, 50% 80%);
+                    }
+                    .gift-bow::before, .gift-bow::after {
+                        content: '';
+                        position: absolute;
+                        top: 10px; width: 30px; height: 30px;
+                        border: 4px solid #fbbf24;
+                        border-radius: 50%;
+                        z-index: -1;
+                    }
+                    .gift-bow::before { left: -15px; transform: rotate(-20deg); }
+                    .gift-bow::after { right: -15px; transform: rotate(20deg); }
+
+                    .gift-tag {
+                        position: absolute;
+                        top: 40px; right: -20px;
+                        background: #fff;
+                        color: #1e293b;
+                        padding: 4px 8px;
+                        font-size: 0.8rem;
+                        font-weight: bold;
+                        font-family: 'Outfit', sans-serif;
+                        border-radius: 2px;
+                        box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+                        transform-origin: top left;
+                        animation: sway-tag 3s ease-in-out infinite;
+                    }
+                    .gift-tag::before {
+                        content: '';
+                        position: absolute;
+                        top: 50%; left: -4px; width: 8px; height: 8px;
+                        background: #fff;
+                        transform: translateY(-50%) rotate(45deg);
+                    }
+
+                    .gift-instruction {
+                        margin-top: 30px;
+                        font-size: 0.9rem;
+                        color: var(--text-sub);
+                        opacity: 0.8;
+                        animation: pulse 2s infinite;
+                    }
+                    @keyframes float-gift {
+                        0%, 100% { transform: translateY(0) rotate(0deg); }
+                        50% { transform: translateY(-8px) rotate(1deg); }
+                    }
+                    @keyframes sway-tag {
+                        0%, 100% { transform: rotate(-5deg); }
+                        50% { transform: rotate(5deg); }
+                    }
+                    .dud { color: var(--accent-gold); opacity: 0.7; }
+                `;
+                document.head.appendChild(style);
+            }
+
+            // Interaction
+            const box = document.getElementById('giftBox');
+            const container = document.querySelector('.gift-box-container');
+            
+            const handleUnwrap = (e) => {
+                e.stopPropagation();
+                
+                try {
+                    Sound.reveal();
+                } catch (err) { console.log(err); }
+                
+                // 1. Screen Flash
+                const flash = document.createElement('div');
+                flash.className = 'flash-overlay active';
+                document.body.appendChild(flash);
+                setTimeout(() => {
+                    flash.classList.remove('active');
+                    setTimeout(() => flash.remove(), 200);
+                }, 50);
+
+                // 2. Confetti Explosion (Custom Colors)
+                const colors = ['#fbbf24', '#e11d48', '#ffffff'];
+                confetti({
+                    particleCount: 150,
+                    spread: 100,
+                    origin: { y: 0.6 },
+                    colors: colors,
+                    disableForReducedMotion: true
+                });
+
+                // 3. Restore Result & Show God Rays
+                resultContainer.innerHTML = originalResultContent;
+                
+                // Inject God Rays
+                const rays = document.createElement('div');
+                rays.className = 'god-rays active';
+                resultContainer.appendChild(rays);
+
+                // 4. Scramble Text
+                const nameEl = document.getElementById('resultName');
+                if (nameEl) {
+                    // Fallback if name is missing
+                    if (!receiverName) {
+                        console.error("Receiver name missing!");
+                        receiverName = "Nissefejl!";
+                    }
+                    
+                    // Ensure element is visible
+                    nameEl.style.opacity = '1';
+                    nameEl.innerText = ""; // Clear first
+                    
+                    const scrambler = new ScrambleText(nameEl);
+                    scrambler.setText(receiverName).catch(e => {
+                        console.error(e);
+                        nameEl.innerText = receiverName; // Fallback
+                    });
+                }
+            };
+
+            box.addEventListener('click', handleUnwrap);
+            box.addEventListener('touchstart', handleUnwrap);
+            container.addEventListener('click', handleUnwrap);
+        }
+
+        // Update showResult to use Gift Box
+        showResult = function(giver) {
+            const receiverName = currentAssignments[giver];
+            
+            // Visual Transition
+            const grid = document.getElementById('namesGrid');
+            const header = document.getElementById('headerContent');
+            const result = document.getElementById('result');
+            const infoBtn = document.getElementById('infoBtn');
+
+            grid.style.display = 'none';
+            header.style.display = 'none';
+            infoBtn.style.display = 'none'; 
+            result.classList.add('show');
+
+            // Show Gift Box instead of immediate result
+            showGiftBox(receiverName);
+        };
 
     </script>
 </body>
